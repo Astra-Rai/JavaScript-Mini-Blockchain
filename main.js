@@ -20,16 +20,40 @@ class Block {
         //hash property
         //this contains the calculate the Hash function of the block
         this.hash = this.calculateHash();
+        //add nonce
+        this.nonce = 0;
     }
     calculateHash(){
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        
+        //below hash calculation w/o nonce variable 
+        //return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        //below is hash calculation with nonce variable, which is added during proof of work tutorial 
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+    }
+
+    mineBlock(difficulty){
+        //we want hash to begin with a certain amount of zeros
+        //take substring of hash, start at zero and go up to difficulty
+        while(this.hash.substring(0, difficulty) !==Array(difficulty + 1).join('0')){
+            //calculate hash of block
+            //increment nonce as long as hash doesn't have the correct amount of zeros
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+
+        //p[rint hash of block that was mined
+
+       console.log("Block mined: " + this.hash);
     }
 }
 class Blockcahin{  
     //constructor is responsible for initializes our blockchain
-    constructor(){
+    constructor() {
     //first block on chain is called a genesis block and needs to be added manually    
         this.chain = [this.createGenesisBlock()];
+    //add difficulty as a property to the blockchain
+    this.difficulty = 4;
+
     }
 
     createGenesisBlock(){
@@ -43,9 +67,15 @@ class Blockcahin{
     addBlock(newBlock){
         //get previous hash of block
         newBlock.previousHash = this.getLatestBlock().hash;
+        
+    
         //newBlock.index = this.getLatestBlock().index + 1;
         //new block always has a new calculated hash
-        newBlock.hash = newBlock.calculateHash();
+        //line of code below removed during pow tutorial
+        //newBlock.hash = newBlock.calculateHash();
+        //added line below to factor in difficulty
+        newBlock.mineBlock(this.difficulty);
+        
         //push new block on chain
         this.chain.push(newBlock);
     }
@@ -69,13 +99,26 @@ class Blockcahin{
 }  
 //create an instance of the block chain
 let starCoin= new Blockcahin();
+/*console log for pow tutorial
+expected output 
+
+*/
+console.log('Mining block 1....');
 starCoin.addBlock(new Block(1, "12/03/2019", {amount: 4}));
+
+console.log('Mining block 2...');
 starCoin.addBlock(new Block(2, "12/04/2019", {amount: 10}));
 
+/*
+Expected output for console.logs above....
 
-//second test for code
-console.log('Is blockcahin valid? ' + starCoin.isChainValid());
+Mining block 1....
+Block mined: 00eddd3d9957c382caec3056c8d6de4980d5903083945a08ff4ad39ac8385015
+Mining block 2...
+Block mined: 00e5de1c264250ec07faf2e4b2d7080edf4e2072818735aea9171703a107ba8f
+*/
 
+//second test for code, check to see if chain is valid
+//console.log('Is blockcahin valid? ' + starCoin.isChainValid());
 
 //first test of code-console.log(JSON.stringify(starCoin, null, 4));
-    
